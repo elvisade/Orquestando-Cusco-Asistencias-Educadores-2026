@@ -15,7 +15,7 @@
 body{
   font-family: Arial, sans-serif;
   text-align:center;
-  background-image:url("fondo-orquestandoX.jpg");
+  background-image:url("fondo-orquestando.jpg");
   background-size:cover;
   background-position:center;
   background-attachment:fixed;
@@ -206,7 +206,7 @@ async function guardarEdicion(){
 async function verAsistencias(){
   calendario.innerHTML="";
   const e=educadorSel.value;
-  if(!e||!f)return;
+  if(!e)return;
   const anio=parseInt(anioSel.value);
   const mes=parseInt(mesSel.value);
 
