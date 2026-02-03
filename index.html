@@ -206,7 +206,7 @@ async function guardarEdicion(){
 async function verAsistencias(){
   calendario.innerHTML="";
   const e=educadorSel.value;
-  if(!e||pin!==pines[e])return alert("Seleccione Educador y mes");
+  if(!e||!f)return;
   const anio=parseInt(anioSel.value);
   const mes=parseInt(mesSel.value);
 
