@@ -229,6 +229,82 @@ async function descargarExcel() {
   XLSX.utils.book_append_sheet(libro, hoja, "Asistencias");
   XLSX.writeFile(libro, `Asistencia_${educador}_${anio}_${mes}.xlsx`);
 }
+<script>
+async function verAsistencias() {
+  calendario.innerHTML = "";
+
+  const educador = educadorSel.value;
+  if (!educador) {
+    alert("Seleccione educador");
+    return;
+  }
+
+  const anio = parseInt(anioSel.value);
+  const mes = parseInt(mesSel.value);
+
+  // Obtener solo asistencias del educador
+  const snapshot = await db.collection("asistencias")
+    .where(firebase.firestore.FieldPath.documentId(), ">=", `${educador}-`)
+    .where(firebase.firestore.FieldPath.documentId(), "<=", `${educador}-\uf8ff`)
+    .get();
+
+  const data = {};
+  snapshot.forEach(doc => data[doc.id] = doc.data());
+
+  const primerDia = new Date(anio, mes, 1);
+  const ultimoDia = new Date(anio, mes + 1, 0).getDate();
+
+  let semana = document.createElement("div");
+  semana.className = "semana";
+  calendario.appendChild(semana);
+
+  // Ajuste correcto para semana iniciando sábado
+  let offset = primerDia.getDay() === 6 ? 0 : primerDia.getDay() + 1;
+  for (let i = 0; i < offset; i++) {
+    semana.appendChild(document.createElement("div"));
+  }
+
+  for (let d = 1; d <= ultimoDia; d++) {
+    const fechaObj = new Date(anio, mes, d);
+    const fechaStr = fechaObj.toISOString().split("T")[0];
+    const key = `${educador}-${fechaStr}`;
+    const r = data[key] || {};
+
+    const div = document.createElement("div");
+    div.className = "dia";
+
+    if ([0,6].includes(fechaObj.getDay())) {
+      div.classList.add("fin-semana");
+    }
+
+    if (r.estado) div.classList.add(r.estado.replace(" ", ""));
+    if (r.entrada) div.classList.add("Entrada");
+    if (r.salida) div.classList.add("Salida");
+
+    let textoEstado = "";
+    if (r.estado === "Permiso") textoEstado = "🟠 Permiso";
+    if (r.estado === "Trabajo Remoto") textoEstado = "🟣 Trabajo Remoto";
+    if (r.estado === "Falta") textoEstado = "🔴 Falta injustificada";
+    if (r.estado === "Salud") textoEstado = "🟦 Permiso por salud";
+
+    div.innerHTML = `
+      <strong>${d}</strong>
+      ${textoEstado ? "<br>" + textoEstado : ""}
+      ${!r.estado && r.entrada ? "<br>🟢 " + r.entrada : ""}
+      ${!r.estado && r.salida ? "<br>🔵 " + r.salida : ""}
+    `;
+
+    semana.appendChild(div);
+
+    // Nueva fila cada viernes
+    if (fechaObj.getDay() === 5 && d !== ultimoDia) {
+      semana = document.createElement("div");
+      semana.className = "semana";
+      calendario.appendChild(semana);
+    }
+  }
+}
+</script>
 
 /* RESTO DEL CÓDIGO (marcar, admin, calendario) */
 /* ——— SE MANTIENE IGUAL A TU LÓGICA ORIGINAL ——— */
